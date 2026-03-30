@@ -1,158 +1,446 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Metallhaut® — Настоящий жидкий металл</title>
-    <style>
-        /* БАЗОВЫЕ НАСТРОЙКИ И ЦВЕТА */
-        :root {
-            --brass: #b5955c;        /* Цвет латуни/бронзы */
-            --brass-light: #d4af37;  /* Светлый блик металла */
-            --concrete-dark: #121212; /* Глубокий темный (основа) */
-            --text-main: #f0f0f0;    /* Светлый текст */
-        }
-        
-        body, html {
-            margin: 0;
-            padding: 0;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: var(--concrete-dark);
-            color: var(--text-main);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Metallhaut® — жидкий металл от производителя</title>
+  <meta name="description" content="Metallhaut® — российский бренд жидкого металла для мебели, интерьера и архитектуры." />
+  <style>
+    :root {
+      --bg: #0f1114;
+      --panel: #171b21;
+      --panel-2: #1e242d;
+      --line: #2a313d;
+      --text: #eff2f6;
+      --muted: #b6bfcb;
+      --accent: #c9a36b;
+      --accent-2: #f0cf93;
+      --danger: #eb5f4d;
+      --ok: #5ec28f;
+    }
 
-        /* ГЛАВНЫЙ ЭКРАН */
-        .hero {
-            position: relative;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            overflow: hidden;
-            /* Градиентный фон с имитацией темного бетона/чугуна */
-            background: linear-gradient(135deg, #0a0a0a 0%, #2a2a2a 100%);
-            padding: 0 20px;
-        }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(160deg, #0a0c0f 0%, #131820 45%, #0f1114 100%);
+      color: var(--text);
+      line-height: 1.6;
+    }
 
-        /* Шум для имитации макро-текстуры материала */
-        .hero::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.04"/%3E%3C/svg%3E');
-            pointer-events: none;
-        }
+    .container { width: min(1180px, 92%); margin: 0 auto; }
+    .section { padding: 72px 0; border-top: 1px solid rgba(255,255,255,0.06); }
+    .section h2 { font-size: clamp(28px, 4vw, 40px); margin: 0 0 20px; }
+    .lead { color: var(--muted); font-size: 18px; max-width: 900px; }
 
-        /* ВЕРХНЕЕ МЕНЮ (ШАПКА) */
-        .header-top {
-            position: absolute;
-            top: 0;
-            width: 100%;
-            padding: 30px 50px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-sizing: border-box;
-            z-index: 10;
-        }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      backdrop-filter: blur(10px);
+      background: rgba(15, 17, 20, 0.86);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 72px;
+    }
+    .logo { font-size: 26px; letter-spacing: 2px; font-weight: 800; }
+    .logo small { font-size: 11px; vertical-align: top; }
+    nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    nav a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    nav a:hover { color: var(--accent-2); }
 
-        .logo {
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: 3px;
-            color: var(--text-main);
-            text-transform: uppercase;
-        }
+    .hero {
+      padding: 88px 0 84px;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(201,163,107,0.18), transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.07), transparent 40%);
+    }
+    .eyebrow {
+      color: var(--accent-2);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 13px;
+      margin-bottom: 16px;
+      font-weight: 700;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(34px, 6vw, 62px);
+      line-height: 1.08;
+      max-width: 980px;
+    }
+    .hero p { max-width: 900px; color: var(--muted); font-size: 20px; }
 
-        .contact-top a {
-            color: var(--text-main);
-            text-decoration: none;
-            font-size: 16px;
-            letter-spacing: 1px;
-            transition: color 0.3s ease;
-        }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+    .btn {
+      appearance: none;
+      border: 1px solid transparent;
+      text-decoration: none;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .2s ease;
+      display: inline-block;
+    }
+    .btn-primary {
+      background: linear-gradient(130deg, var(--accent-2), var(--accent));
+      color: #1b1510;
+      box-shadow: 0 10px 24px rgba(201,163,107,0.2);
+    }
+    .btn-secondary {
+      border-color: rgba(255,255,255,0.22);
+      color: var(--text);
+      background: rgba(255,255,255,0.02);
+    }
 
-        .contact-top a:hover {
-            color: var(--brass-light);
-        }
+    .grid { display: grid; gap: 18px; }
+    .cards-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .cards-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
 
-        /* КОНТЕНТ ПО ЦЕНТРУ */
-        .hero-content {
-            max-width: 900px;
-            z-index: 1;
-        }
+    .card {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .card h3 { margin: 0 0 8px; font-size: 22px; }
+    .meta { color: var(--muted); font-size: 14px; }
+    .price { margin-top: 12px; font-size: 26px; font-weight: 800; color: var(--accent-2); }
 
-        /* Эффект полированного металла для заголовка */
-        .title {
-            font-size: 64px;
-            font-weight: 800;
-            margin-bottom: 24px;
-            line-height: 1.1;
-            background: linear-gradient(to right, var(--brass), #fdfbf7, var(--brass-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+    .buy-row { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    input[type="number"], input[type="text"], input[type="email"], input[type="tel"], select {
+      background: #0f1319;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 10px 12px;
+      width: 100%;
+    }
+    .qty { width: 90px; }
 
-        .subtitle {
-            font-size: 20px;
-            font-weight: 300;
-            line-height: 1.5;
-            color: #b0b0b0;
-            margin-bottom: 40px;
-            max-width: 750px;
-            margin-left: auto;
-            margin-right: auto;
-        }
+    .list { margin: 0; padding-left: 18px; color: var(--muted); }
+    .list li + li { margin-top: 6px; }
 
-        /* КНОПКА CTA */
-        .cta-btn {
-            display: inline-block;
-            padding: 18px 45px;
-            font-size: 16px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--concrete-dark);
-            background: linear-gradient(135deg, var(--brass-light), var(--brass));
-            border: none;
-            border-radius: 3px; /* Острые, брутальные углы */
-            text-decoration: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(181, 149, 92, 0.15);
-        }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      margin-top: 14px;
+      background: var(--panel);
+      font-size: 14px;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { color: var(--accent-2); font-weight: 700; background: #12161d; }
 
-        .cta-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(181, 149, 92, 0.35);
-        }
+    .filters { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0,1fr)); margin-top: 16px; }
 
-        /* Адаптив под мобильные устройства */
-        @media (max-width: 768px) {
-            .header-top { padding: 20px; flex-direction: column; gap: 15px; }
-            .title { font-size: 42px; }
-            .subtitle { font-size: 16px; }
-            .cta-btn { padding: 15px 30px; font-size: 14px; }
-        }
-    </style>
+    .form { display: grid; gap: 10px; max-width: 620px; }
+
+    .footer {
+      padding: 44px 0;
+      border-top: 1px solid rgba(255,255,255,.08);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 980px) {
+      .cards-3, .cards-2, .filters { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 680px) {
+      .topbar-inner { flex-direction: column; padding: 12px 0; }
+      .cards-3, .cards-2, .filters { grid-template-columns: 1fr; }
+      .hero p { font-size: 17px; }
+      h1 { font-size: 36px; }
+    }
+  </style>
 </head>
 <body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="logo">METALLHAUT<small>®</small></div>
+      <nav>
+        <ul>
+          <li><a href="/">Главная</a></li>
+          <li><a href="/katalog">Каталог</a></li>
+          <li><a href="/obuchenie">Обучение</a></li>
+          <li><a href="/uslugi">Услуги</a></li>
+          <li><a href="/blog">Блог</a></li>
+          <li><a href="/partners">Партнёры</a></li>
+          <li><a href="/contacts">Контакты</a></li>
+          <li><a href="/privacy">Privacy</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
 
+  <main>
     <section class="hero">
-        <header class="header-top">
-            <div class="logo">METALLHAUT<span style="font-size:14px; vertical-align:top;">®</span></div>
-            <div class="contact-top">
-                <a href="tel:+74955054525">+7 (495) 505-45-25</a>
-            </div>
-        </header>
-
-        <div class="hero-content">
-            <h1 class="title">Это материал, а не краска</h1>
-            <p class="subtitle">Настоящий жидкий металл для мебели, интерьера и архитектуры — от производителя. Золото, серебро, медь, бронза и другие. Доставка по всей России.</p>
-            <a href="https://wa.me/79265054525" class="cta-btn" target="_blank">Связаться</a>
+      <div class="container">
+        <div class="eyebrow">Российский бренд и производитель · ГК Magdecor®</div>
+        <h1>Это материал, а не краска.</h1>
+        <p>Настоящий жидкий металл для мебели, интерьера и архитектуры — от производителя. Золото, серебро, медь, бронза и другие. Доставка по всей России.</p>
+        <div class="btn-row">
+          <a class="btn btn-primary" href="https://wa.me/79265054525" target="_blank" rel="noopener">Связаться в WhatsApp</a>
+          <a class="btn btn-secondary" href="#catalog">Перейти в каталог</a>
         </div>
+      </div>
     </section>
 
+    <section class="section" id="about">
+      <div class="container">
+        <h2>Жидкие металлы Metallhaut® — О нас</h2>
+        <p class="lead">Metallhaut® — российский бренд и производитель оригинального материала «жидкий металл», входящий в группу компаний Magdecor®. Компания специализируется на производстве жидкого металла из настоящего металла и инновационных материалов для холодной металлизации твёрдых поверхностей. Мы предлагаем жидкий металл от производителя, разработанный профессионалами для профессионального применения — в мебельном производстве, интерьерных проектах, декоре и архитектуре.</p>
+        <p class="lead">Материалы Metallhaut® предназначены для дизайнеров, архитекторов, скульпторов и производств, которые работают с формой, фактурой и настоящим металлом, а не с имитацией.</p>
+        <p class="lead"><strong>Жидкий металл Metallhaut® — это материал, а не краска.</strong></p>
+        <div class="btn-row"><a class="btn btn-secondary" href="#catalog">Каталог →</a></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>Популярные товары</h2>
+        <div class="grid cards-3">
+          <article class="card">
+            <h3>MasterLine 2K Латунь</h3>
+            <div class="meta">Профессиональная двухкомпонентная система</div>
+            <div class="price">10 930 ₽</div>
+            <div class="buy-row">
+              <a class="btn btn-secondary" href="#catalog">В каталог</a>
+              <button class="btn btn-primary" type="button">Купить</button>
+              <input class="qty" type="number" min="1" value="1" aria-label="Количество" />
+            </div>
+          </article>
+          <article class="card">
+            <h3>MasterLine 2K Бронза</h3>
+            <div class="meta">Глубокий коричнево-золотой оттенок</div>
+            <div class="price">11 200 ₽</div>
+            <div class="buy-row">
+              <a class="btn btn-secondary" href="#catalog">В каталог</a>
+              <button class="btn btn-primary" type="button">Купить</button>
+              <input class="qty" type="number" min="1" value="1" aria-label="Количество" />
+            </div>
+          </article>
+          <article class="card">
+            <h3>MasterLine 2K Алюминий</h3>
+            <div class="meta">Холодный серебристый технологичный металл</div>
+            <div class="price">9 300 ₽</div>
+            <div class="buy-row">
+              <a class="btn btn-secondary" href="#catalog">В каталог</a>
+              <button class="btn btn-primary" type="button">Купить</button>
+              <input class="qty" type="number" min="1" value="1" aria-label="Количество" />
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>Галерея работ</h2>
+        <div class="grid cards-2">
+          <article class="card"><h3>FULLHOUSE</h3><p class="meta">Разные техники нанесения и обработки двухкомпонентного цинка.</p></article>
+          <article class="card"><h3>Стойка ресепшн — Blar, Москва</h3><p class="meta">Фокус на пластике формы и металлической глубине.</p></article>
+          <article class="card"><h3>Арт-объект — ООО А-ТСМ, Ялта</h3><p class="meta">Металлизация сложного объёма для интерьерной среды.</p></article>
+          <article class="card"><h3>Мебельные элементы</h3><p class="meta">Бронза 2К, сатиновая обработка.</p></article>
+          <article class="card"><h3>Металлизация стойки</h3><p class="meta">Индустриальный холодный блеск в коммерческом пространстве.</p></article>
+          <article class="card"><h3>Металлизация панно</h3><p class="meta">Фрезерованный МДФ, рельеф и патина.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>Сферы применения</h2>
+        <table>
+          <thead>
+            <tr><th>Сфера</th><th>Описание</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Мебельное производство</td><td>Фасады, панно, панели, фурнитура, отдельные элементы</td></tr>
+            <tr><td>Стеновая отделка</td><td>Акцентирование стен, панели, колонны, откосы, арки</td></tr>
+            <tr><td>Скульптура</td><td>Небольшие скульптуры и габаритные арт-объекты</td></tr>
+            <tr><td>Декорирование</td><td>Багеты, предметы интерьера, бутафория, сценические декорации</td></tr>
+            <tr><td>Входные группы и фасадный декор</td><td>Откосы, двери, фасадные панели, вывески, инсталляции</td></tr>
+            <tr><td>Световые конструкции</td><td>Светильники, лампы и другие элементы</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>Обратная связь</h2>
+        <form class="form">
+          <input type="email" placeholder="Почта" required />
+          <input type="tel" placeholder="Телефон" required />
+          <input type="text" placeholder="Имя" required />
+          <button type="submit" class="btn btn-primary">Отправить</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>Этапы работы (технология Metallhaut®)</h2>
+        <ol class="list">
+          <li><strong>Подготовка:</strong> грунтование, шлифовка, обеспыливание, обезжиривание.</li>
+          <li><strong>Смешивание:</strong> смешивание компонентов для рабочего состава.</li>
+          <li><strong>Настройка оборудования:</strong> факел, давление, подача материала.</li>
+          <li><strong>Нанесение:</strong> два слоя «мокрый по мокрому».</li>
+          <li><strong>Шлифовка и полировка:</strong> пошаговая обработка абразивами.</li>
+          <li><strong>Защита:</strong> защитное покрытие от Metallhaut® при необходимости.</li>
+        </ol>
+        <div class="btn-row"><a class="btn btn-secondary" href="https://disk.yandex.ru/i/S5JBFy7mtf0rrw" target="_blank" rel="noopener">Скачать инструкции</a></div>
+      </div>
+    </section>
+
+    <section class="section" id="training">
+      <div class="container">
+        <h2>Мы проводим обучение</h2>
+        <p class="lead">От неведения до мастерства — один звонок.</p>
+        <form class="form">
+          <input type="email" placeholder="Почта" required />
+          <input type="text" placeholder="Имя" required />
+          <input type="tel" placeholder="Телефон" required />
+          <button type="submit" class="btn btn-primary">Отправить</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>Наши услуги</h2>
+        <ul class="list">
+          <li>Обучение</li>
+          <li>Металлизация</li>
+          <li>Образцы</li>
+          <li>Партнёрская комплектация проекта</li>
+          <li>Реставрация</li>
+        </ul>
+        <p class="lead">Телефон: <a href="tel:+74955054525" style="color:var(--accent-2)">+7 (495) 505-45-25</a></p>
+      </div>
+    </section>
+
+    <section class="section" id="catalog">
+      <div class="container">
+        <h2>Каталог продукции</h2>
+
+        <h3>Фильтры каталога</h3>
+        <div class="filters">
+          <select><option>Раздел: все</option><option>AquaLine 1K</option><option>MasterLine 2K</option><option>Oxydum</option><option>Защита и сопутствующее</option></select>
+          <select><option>Металл: все</option><option>Алюминий</option><option>Бронза</option><option>Латунь</option><option>Медь</option><option>Мельхиор</option><option>Никель</option><option>Олово</option><option>Цинк</option><option>Чугун</option><option>Хром</option></select>
+          <select><option>Оттенок: все</option><option>AL100</option><option>BR500</option><option>BR555</option><option>CU100</option><option>CU200</option><option>L200</option><option>L300</option><option>L500</option><option>MR-100</option><option>NL-100</option></select>
+          <select><option>Сортировка: по умолчанию</option><option>Цена ↑</option><option>Цена ↓</option><option>Название А–Я</option><option>Новинки</option></select>
+        </div>
+
+        <h3>Master Line 2K</h3>
+        <p class="meta">Исключительная износостойкость, устойчивость к влаге, повышенная прочность. Наносится краскопультом. Фасовки: 1 кг / 5 кг.</p>
+        <table>
+          <thead><tr><th>Название</th><th>Артикул</th><th>Металл</th><th>Описание</th><th>Цена (1 кг)</th></tr></thead>
+          <tbody>
+            <tr><td>MasterLine 2K Латунь</td><td>MH2K-L500</td><td>Латунь</td><td>Тёплый золотисто-латунный цвет с благородной патиной</td><td>17 600 ₽</td></tr>
+            <tr><td>MasterLine 2K Бронза</td><td>MH2K-BR500</td><td>Бронза</td><td>Тёплая бронза с глубоким коричнево-золотым оттенком</td><td>11 300 ₽</td></tr>
+            <tr><td>MasterLine 2K Медь</td><td>MH2K-CU100</td><td>Медь</td><td>Богатый медный цвет, возможность оксидирования</td><td>10 900 ₽</td></tr>
+            <tr><td>MasterLine 2K Алюминий</td><td>MH2K-L200-1</td><td>Алюминий</td><td>Холодный серебристый, технологичный вид</td><td>9 300 ₽</td></tr>
+            <tr><td>MasterLine 2K Олово</td><td>MH2K-OL200-1</td><td>Олово</td><td>Стальной серо-серебристый, классика и индустрия</td><td>13 500 ₽</td></tr>
+            <tr><td>MasterLine 2K Цинк</td><td>MH2K-ZN200-1</td><td>Цинк</td><td>Холодный серо-металлический, индустриальный</td><td>9 350 ₽</td></tr>
+            <tr><td>MasterLine 2K Мельхиор</td><td>MR2K-L200-1</td><td>Мельхиор</td><td>Лёгкий серебристый тон, благородный вид</td><td>13 000 ₽</td></tr>
+            <tr><td>MasterLine 2K Никель</td><td>MH2K-NL200-1</td><td>Никель</td><td>Холодный серебристый, матовый или зеркальный</td><td>13 000 ₽</td></tr>
+            <tr><td>MasterLine 2K Чугун</td><td>MH2K-ST200-1</td><td>Чугун</td><td>Тёмный, брутальный, ударопрочная плёнка</td><td>9 700 ₽</td></tr>
+            <tr><td>MasterLine 2K Хром</td><td>MH2K-ST200-1</td><td>Хром</td><td>Зеркально-хромовый блеск, премиальный вид</td><td>9 700 ₽</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Aqua Line 1K</h3>
+        <p class="meta">Без резкого запаха, для жилых и коммерческих помещений, не требует спецоборудования. Фасовки: 1 кг / 2 кг.</p>
+        <table>
+          <thead><tr><th>Название</th><th>Металл</th><th>Описание</th><th>Цена (1 кг)</th></tr></thead>
+          <tbody>
+            <tr><td>Aqua Line 1K Латунь</td><td>Латунь</td><td>Тёплый золотисто-латунный, без запаха</td><td>9 000 ₽</td></tr>
+            <tr><td>Aqua Line 1K Бронза</td><td>Бронза</td><td>Глубокий бронзовый, античный эффект</td><td>9 000 ₽</td></tr>
+            <tr><td>Aqua Line 1K Медь</td><td>Медь</td><td>Насыщенный медный, возможность патинирования</td><td>9 000 ₽</td></tr>
+            <tr><td>Aqua Line 1K Алюминий</td><td>Алюминий</td><td>Холодный, технологичный вид</td><td>8 000 ₽</td></tr>
+            <tr><td>Aqua Line 1K Цинк</td><td>Цинк</td><td>Серо-металлический, индустриальный</td><td>8 000 ₽</td></tr>
+            <tr><td>Aqua Line 1K Олово</td><td>Олово</td><td>Стальной оттенок, классика и минимализм</td><td>9 450 ₽</td></tr>
+            <tr><td>Aqua Line 1K Мельхиор</td><td>Мельхиор</td><td>Серебристо-металлический, дорогой вид</td><td>11 000 ₽</td></tr>
+            <tr><td>Aqua Line 1K Никель</td><td>Никель</td><td>Элегантный металлический блеск, холодный</td><td>11 000 ₽</td></tr>
+            <tr><td>Aqua Line 1K Хром</td><td>Хром</td><td>Зеркальный металл, премиум</td><td>25 000 ₽</td></tr>
+            <tr><td>Aqua Line 1K Чугун</td><td>Чугун</td><td>Брутальный тёмный металл, арт-объекты</td><td>8 000 ₽</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Oxydum (окислители)</h3>
+        <p class="meta">Ускоряют процесс естественного старения металла. Фасовки: 0,5 л / 1,0 л. Цена: 1 500 ₽.</p>
+        <table>
+          <thead><tr><th>Название</th><th>Для металлов</th><th>Эффект</th></tr></thead>
+          <tbody>
+            <tr><td>Oxydum Малахит</td><td>Латунь, медь, бронза</td><td>Зелено-бирюзовые оттенки, малахитовые переходы</td></tr>
+            <tr><td>Oxydum Лазурь</td><td>Медь, бронза</td><td>Сине-голубые оттенки, голограммные эффекты</td></tr>
+            <tr><td>Oxydum Ржавчина</td><td>Железо, чугун</td><td>Натуральная ржавая текстура, коррозионный эффект</td></tr>
+            <tr><td>Oxydum Чернение</td><td>Все металлы</td><td>Графитово-чёрный, акцент на рельеф</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Защита и уход</h3>
+        <table>
+          <thead><tr><th>Название</th><th>Описание</th><th>Цена</th></tr></thead>
+          <tbody>
+            <tr><td>Fixmetal Pro (G-300 / G-1000 / G-5000)</td><td>Сверхпрочное защитное покрытие на керамической основе</td><td>7 500 ₽</td></tr>
+            <tr><td>Fenix (0,5 л)</td><td>Профессиональное средство по уходу, удаляет загрязнения и окисление</td><td>800 ₽</td></tr>
+            <tr><td>Clean Master Pro (0,5 л)</td><td>Профессиональная смывка для глубокой очистки перед отделкой</td><td>800 ₽</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="contacts">
+      <div class="container">
+        <h2>Контакты</h2>
+        <div class="grid cards-2">
+          <div class="card">
+            <p><strong>Телефон:</strong> <a href="tel:+74955054525" style="color:var(--accent-2)">+7 (495) 505-45-25</a><br>
+            <strong>Моб./WhatsApp:</strong> <a href="tel:+79265054525" style="color:var(--accent-2)">+7 926 505-45-25</a></p>
+            <p><strong>Email:</strong> <a href="mailto:sale@magdecor.ru" style="color:var(--accent-2)">sale@magdecor.ru</a> / <a href="mailto:sales@magdecor.ru" style="color:var(--accent-2)">sales@magdecor.ru</a></p>
+            <p><strong>Адрес:</strong> Москва, 3-я улица Ямского Поля, 2к5 (корп. 5).<br>Метро Белорусская, рядом с театром «Одеон».</p>
+          </div>
+          <div class="card">
+            <p><strong>Telegram:</strong> <a href="https://t.me/metallhautofficial" style="color:var(--accent-2)">t.me/metallhautofficial</a></p>
+            <p><strong>ВКонтакте:</strong> <a href="https://vk.com/metallhautofficial" style="color:var(--accent-2)">vk.com/metallhautofficial</a></p>
+            <p><strong>YouTube:</strong> <a href="https://youtube.com/@MetallHaut" style="color:var(--accent-2)">youtube.com/@MetallHaut</a></p>
+            <p><strong>Pinterest:</strong> <a href="https://ru.pinterest.com/Metallhaut" style="color:var(--accent-2)">ru.pinterest.com/Metallhaut</a></p>
+            <p><strong>Калькулятор:</strong> <a href="https://decor-portal.ru/METALLHAUT.html" style="color:var(--accent-2)">decor-portal.ru/METALLHAUT.html</a></p>
+            <p><strong>Прайс:</strong> <a href="https://disk.yandex.ru/i/S5JBFy7mtf0rrw" style="color:var(--accent-2)">disk.yandex.ru/i/S5JBFy7mtf0rrw</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>© Metallhaut® · Группа компаний Magdecor® · metallhaut.pro</p>
+    </div>
+  </footer>
 </body>
 </html>
