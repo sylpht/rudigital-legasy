@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ru" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAGDECOR & METALLHAUT Dashboard</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' }
+  </script>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    /* Стили для скроллбаров и конфетти */
+    body { margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; }
+    .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
+    .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #94a3b8; }
+    
+    @keyframes confetti-fall {
+      0% { transform: translateY(-10vh) rotate(0deg) translateX(0); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg) translateX(50px); opacity: 0; }
+    }
+    .confetti-piece { position: absolute; top: -20px; z-index: 100; border-radius: 2px; animation: confetti-fall linear forwards; }
+  </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900 transition-colors duration-200">
+  
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useCallback, memo, useRef, useMemo } = React;
+
+    // === КОМАНДА ===
+    const TEAM = [
+      { id: 'u1', name: 'Иван (Ты)', initials: 'ИВ', color: 'bg-blue-500' },
+      { id: 'u2', name: 'Наталья', initials: 'НТ', color: 'bg-purple-500' },
+      { id: 'u3', name: 'Никита', initials: 'НК', color: 'bg-emerald-500' },
+      { id: 'u4', name: 'Дизайнер', initials: 'ДЗ', color: 'bg-rose-500' },
+    ];
+
+    // === ИСХОДНЫЕ ДАННЫЕ ===
+    const initialData = [
+      { id: 1, title: 'Документы и продажи', items: [
+          { id: '1-1', text: 'Делать Кп', checked: false, status: 'todo' },
+          { id: '1-2', text: 'Выставлять счета', checked: false, status: 'todo' },
+          { id: '1-3', text: 'УПД', checked: false, status: 'todo' },
+          { id: '1-4', text: 'Заявка на отгрузку', checked: false, status: 'todo' },
+          { id: '1-5', text: 'КП+Каталог', checked: false, status: 'todo' },
+      ]},
+      { id: 2, title: 'Связь', items: [
+          { id: '2-1', text: 'Телефон', checked: false, status: 'todo' },
+          { id: '2-2', text: 'Переадресация', checked: false, status: 'todo' },
+          { id: '2-3', text: 'Почта+сбор', checked: false, status: 'todo' },
+      ]},
+      { id: 3, title: 'Соцсети', items: [
+          { id: '3-1', text: 'Вк', checked: false, status: 'todo' },
+          { id: '3-2', text: 'Инста', checked: false, status: 'todo' },
+          { id: '3-3', text: 'Тг', checked: false, status: 'todo' },
+          { id: '3-4', text: 'Дзен', checked: false, status: 'todo' },
+          { id: '3-5', text: 'Тредсы', checked: false, status: 'todo' },
+      ]},
+      { id: 4, title: 'Проекты', items: [
+          { id: '4-1', text: 'Маглинк', checked: false, status: 'todo' },
+          { id: '4-2', text: 'Металлхаут', checked: false, status: 'todo' },
+      ]},
+      { id: 5, title: 'Люди и встречи', items: [
+          { id: '5-1', text: 'Наталья', checked: false, status: 'todo' },
+          { id: '5-2', text: 'История', checked: false, status: 'todo' },
+          { id: '5-3', text: 'Никита', checked: false, status: 'todo' },
+          { id: '5-4', text: 'Кофемания', checked: false, status: 'todo' },
+      ]},
+      { id: 6, title: 'Партнеры', items: [
+          { id: '6-1', text: 'Дилеры', checked: false, status: 'todo' },
+          { id: '6-2', text: 'Обучение', checked: false, status: 'todo' },
+          { id: '6-3', text: 'КП', checked: false, status: 'todo' },
+          { id: '6-4', text: 'Звонки', checked: false, status: 'todo' },
+      ]},
+      { id: 7, title: 'Производство', items: [
+          { id: '7-1', text: 'Этикетки', checked: false, status: 'todo' },
+          { id: '7-2', text: 'Банки', checked: false, status: 'todo' },
+          { id: '7-3', text: 'Сертификаты', checked: false, status: 'todo' },
+      ]},
+      { id: 8, title: 'Объекты', items: [
+          { id: '8-1', text: 'Кухни', checked: false, status: 'todo' },
+          { id: '8-2', text: 'Скульптуры', checked: false, status: 'todo' },
+          { id: '8-3', text: 'Столы', checked: false, status: 'todo' },
+          { id: '8-4', text: 'Стены', checked: false, status: 'todo' },
+          { id: '8-5', text: 'Шкафы', checked: false, status: 'todo' },
+      ]}
+    ];
+
+    const colorStyles = {
+      default: 'bg-transparent text-slate-700 dark:text-slate-300 border-transparent hover:border-slate-200 dark:hover:border-slate-600',
+      red: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800/50',
+      yellow: 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800/50',
+      green: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800/50',
+    };
+
+    // === КОНФЕТТИ ===
+    const Confetti = memo(() => {
+      const pieces = Array.from({ length: 120 });
+      const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+      return (
+        <div className="fixed inset-0 pointer-events-none z-[100] overflow-hidden">
+          {pieces.map((_, i) => (
+            <div key={i} className="confetti-piece" style={{
+              left: `${Math.random() * 100}%`,
+              backgroundColor: colors[Math.floor(Math.random() * colors.length)],
+              animationDelay: `${Math.random() * 1.5}s`,
+              animationDuration: `${2 + Math.random() * 2}s`,
+              width: `${6 + Math.random() * 6}px`, height: `${10 + Math.random() * 10}px`,
+            }} />
+          ))}
+        </div>
+      );
+    });
+
+    // === ЗАДАЧА ДЛЯ СЕТКИ ===
+    const GridTaskItem = memo(({ item, sectionId, onToggle, onDelete, onEdit, onColorCycle, onAssignCycle, onDropItem }) => {
+      const [isEditing, setIsEditing] = useState(false);
+      const [editValue, setEditValue] = useState(item.text);
+      const assigneeData = TEAM.find(t => t.id === item.assignee);
+
+      useEffect(() => setEditValue(item.text), [item.text]);
+
+      const saveEdit = () => {
+        if (editValue.trim() && editValue !== item.text) onEdit(sectionId, item.id, editValue.trim());
+        setIsEditing(false);
+      };
+
+      return (
+        <li 
+          draggable 
+          onDragStart={(e) => e.dataTransfer.setData('application/json', JSON.stringify({ srcSecId: sectionId, srcItemId: item.id }))}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => onDropItem(e, item.id)}
+          className={`flex items-start gap-1 group p-2 rounded-lg border transition-all ${colorStyles[item.color || 'default']} hover:shadow-sm relative`}
+        >
+          <div className="mt-0.5 opacity-0 group-hover:opacity-100 cursor-move text-slate-400 hover:text-slate-600 transition-opacity" title="Перетащить">
+            ↕️
+          </div>
+
+          <button onClick={() => onToggle(sectionId, item.id)} className={`mt-0.5 flex-shrink-0 transition-colors text-lg leading-none ${item.checked ? 'text-blue-500' : 'text-slate-300 opacity-60 hover:opacity-100'}`}>
+            {item.checked ? '✅' : '⬜'}
+          </button>
+          
+          <div className="flex-1 text-sm pt-0.5 overflow-hidden ml-1 flex flex-col">
+            {isEditing ? (
+              <input 
+                autoFocus type="text" value={editValue} onChange={(e) => setEditValue(e.target.value)}
+                onBlur={saveEdit} onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
+                className="w-full bg-white dark:bg-slate-900 border border-blue-500 rounded px-2 py-0.5 outline-none text-slate-800 dark:text-slate-200"
+              />
+            ) : (
+              <span onDoubleClick={() => setIsEditing(true)} className={`block w-full cursor-text transition-all ${item.checked ? 'text-slate-400 dark:text-slate-500 line-through opacity-60' : ''}`} style={{ wordBreak: 'break-word' }}>
+                {item.text}
+              </span>
+            )}
+          </div>
+
+          {assigneeData && (
+            <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white font-bold shadow-sm ${assigneeData.color}`} title={assigneeData.name}>
+              {assigneeData.initials}
+            </div>
+          )}
+
+          <div className="flex items-center absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-slate-800/90 rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity p-1 gap-1">
+            <button onClick={() => onAssignCycle(sectionId, item.id)} className="p-1 text-sm hover:scale-110 transition-transform" title="Назначить">👤</button>
+            <button onClick={() => onColorCycle(sectionId, item.id)} className="p-1 text-sm hover:scale-110 transition-transform" title="Приоритет">🎨</button>
+            <button onClick={() => setIsEditing(true)} className="p-1 text-sm hover:scale-110 transition-transform" title="Правка">✏️</button>
+            <button onClick={() => onDelete(sectionId, item.id)} className="p-1 text-sm hover:scale-110 transition-transform" title="Удалить">🗑️</button>
+          </div>
+        </li>
+      );
+    });
+
+    // === КАРТОЧКА СЕКЦИИ ===
+    const SectionCard = memo(({ section, hideCompleted, searchQuery, onToggle, onDelete, onAdd, onEdit, onColorCycle, onAssignCycle, onMove }) => {
+      const [inputValue, setInputValue] = useState('');
+      const [isDragOver, setIsDragOver] = useState(false);
+
+      const visibleItems = useMemo(() => {
+        return section.items
+          .filter(i => hideCompleted ? !i.checked : true)
+          .filter(i => searchQuery ? i.text.toLowerCase().includes(searchQuery.toLowerCase()) : true)
+          .sort((a, b) => (a.checked === b.checked ? 0 : a.checked ? 1 : -1));
+      }, [section.items, hideCompleted, searchQuery]);
+
+      const handleAdd = () => {
+        if (!inputValue.trim()) return;
+        onAdd(section.id, inputValue.trim());
+        setInputValue('');
+      };
+
+      const handleDropOnSection = useCallback((e) => {
+        e.preventDefault(); setIsDragOver(false);
+        try {
+          const data = JSON.parse(e.dataTransfer.getData('application/json'));
+          onMove(data.srcSecId, data.srcItemId, section.id, null);
+        } catch(err) {}
+      }, [onMove, section.id]);
+
+      const handleDropOnItem = useCallback((e, targetItemId) => {
+        e.preventDefault(); e.stopPropagation(); setIsDragOver(false);
+        try {
+          const data = JSON.parse(e.dataTransfer.getData('application/json'));
+          onMove(data.srcSecId, data.srcItemId, section.id, targetItemId);
+        } catch(err) {}
+      }, [onMove, section.id]);
+
+      return (
+        <div 
+          className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border overflow-hidden flex flex-col max-h-[500px] transition-all duration-200 ${isDragOver ? 'border-blue-400 dark:border-blue-500 shadow-md ring-2 ring-blue-500/20' : 'border-slate-200 dark:border-slate-700'}`}
+          onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+          onDragLeave={() => setIsDragOver(false)}
+          onDrop={handleDropOnSection}
+        >
+          <div className="bg-slate-50 dark:bg-slate-800/80 px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center transition-colors">
+            <h2 className="font-semibold text-slate-800 dark:text-slate-200">📁 {section.title}</h2>
+            <span className="text-xs font-medium px-2 py-1 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full">
+              {section.items.filter(i => i.checked).length} / {section.items.length}
+            </span>
+          </div>
+
+          <div className="p-3 flex-1 overflow-y-auto custom-scrollbar relative">
+            <ul className="space-y-1.5 min-h-[50px]">
+              {visibleItems.length === 0 ? (
+                <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-4">Нет задач</p>
+              ) : (
+                visibleItems.map(item => (
+                  <GridTaskItem 
+                    key={item.id} item={item} sectionId={section.id}
+                    onToggle={onToggle} onDelete={onDelete} onEdit={onEdit}
+                    onColorCycle={onColorCycle} onAssignCycle={onAssignCycle} onDropItem={handleDropOnItem}
+                  />
+                ))
+              )}
+            </ul>
+          </div>
+
+          <div className="p-3 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 mt-auto transition-colors">
+            <div className="flex items-center gap-2">
+              <input
+                type="text" placeholder="Добавить пункт..." value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                className="flex-1 text-sm bg-white dark:bg-slate-900 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all shadow-sm"
+              />
+              <button onClick={handleAdd} className="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg transition-colors flex-shrink-0 shadow-sm text-lg leading-none">
+                ➕
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    });
+
+    // === ЗАДАЧА КАНБАНА ===
+    const KanbanTaskItem = memo(({ item, onToggle, onAssignCycle, onColorCycle }) => {
+      const assigneeData = TEAM.find(t => t.id === item.assignee);
+      return (
+        <div 
+          draggable
+          onDragStart={(e) => e.dataTransfer.setData('application/json', JSON.stringify({ srcSecId: item.secId, srcItemId: item.id }))}
+          className={`bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 cursor-grab active:cursor-grabbing hover:shadow-md transition-all group ${colorStyles[item.color || 'default']}`}
+        >
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-[10px] font-bold uppercase text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full line-clamp-1">
+              {item.secTitle}
+            </span>
+            <div className="flex gap-1">
+              <button onClick={() => onColorCycle(item.secId, item.id)} className="opacity-0 group-hover:opacity-100 text-sm hover:scale-110 transition-transform">🎨</button>
+              <button onClick={() => onAssignCycle(item.secId, item.id)} className="opacity-0 group-hover:opacity-100 text-sm hover:scale-110 transition-transform">👤</button>
+            </div>
+          </div>
+          
+          <div className="flex gap-2 items-start">
+            <button onClick={() => onToggle(item.secId, item.id)} className={`mt-0.5 ${item.checked ? 'text-blue-500' : 'text-slate-300 opacity-60'}`}>
+              {item.checked ? '✅' : '⬜'}
+            </button>
+            <span className={`text-sm ${item.checked ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-200'}`}>{item.text}</span>
+          </div>
+
+          {assigneeData && (
+            <div className="mt-3 flex justify-end">
+               <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white font-bold shadow-sm ${assigneeData.color}`} title={assigneeData.name}>
+                {assigneeData.initials}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    });
+
+    // === КОЛОНКА КАНБАНА ===
+    const KanbanColumn = memo(({ status, title, items, onStatusChange, onToggle, onAssignCycle, onColorCycle }) => {
+      const [isDragOver, setIsDragOver] = useState(false);
+
+      const handleDrop = useCallback((e) => {
+        e.preventDefault(); setIsDragOver(false);
+        try {
+          const data = JSON.parse(e.dataTransfer.getData('application/json'));
+          onStatusChange(data.srcSecId, data.srcItemId, status);
+        } catch(err) {}
+      }, [onStatusChange, status]);
+
+      return (
+        <div 
+          className={`flex flex-col bg-slate-100/50 dark:bg-slate-800/30 rounded-xl p-3 border-2 transition-colors min-h-[500px] ${isDragOver ? 'border-blue-400 bg-blue-50/30 dark:bg-blue-900/20' : 'border-transparent'}`}
+          onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+          onDragLeave={() => setIsDragOver(false)}
+          onDrop={handleDrop}
+        >
+          <div className="flex justify-between items-center mb-4 px-2">
+            <h3 className="font-bold text-slate-700 dark:text-slate-200">{title}</h3>
+            <span className="text-xs bg-white dark:bg-slate-700 px-2 py-1 rounded-full text-slate-500 dark:text-slate-400 shadow-sm">{items.length}</span>
+          </div>
+          <div className="flex flex-col gap-3 flex-1">
+            {items.map(item => (
+              <KanbanTaskItem key={`${item.secId}-${item.id}`} item={item} onToggle={onToggle} onAssignCycle={onAssignCycle} onColorCycle={onColorCycle} />
+            ))}
+          </div>
+        </div>
+      );
+    });
+
+    // === ГЛАВНОЕ ПРИЛОЖЕНИЕ ===
+    const App = () => {
+      const [sections, setSections] = useState(initialData);
+      const [isDark, setIsDark] = useState(false);
+      const [hideCompleted, setHideCompleted] = useState(false);
+      const [searchQuery, setSearchQuery] = useState('');
+      const [viewMode, setViewMode] = useState('grid');
+      const [showConfetti, setShowConfetti] = useState(false);
+
+      const prevCompletedSections = useRef([]);
+      const prevProgress = useRef(0);
+      const fileInputRef = useRef(null);
+
+      // Загрузка локальных данных
+      useEffect(() => {
+        try {
+          if (localStorage.getItem('dashThemeDark') === 'true') {
+            setIsDark(true);
+            document.documentElement.classList.add('dark');
+          }
+          if (localStorage.getItem('dashViewMode')) setViewMode(localStorage.getItem('dashViewMode'));
+          const savedData = localStorage.getItem('myDashboardData');
+          if (savedData) setSections(JSON.parse(savedData));
+        } catch (e) {}
+      }, []);
+
+      const updateState = useCallback((updater) => {
+        setSections(prev => {
+          const newSections = typeof updater === 'function' ? updater(prev) : updater;
+          localStorage.setItem('myDashboardData', JSON.stringify(newSections));
+          return newSections;
+        });
+      }, []);
+
+      const toggleTheme = () => {
+        setIsDark(!isDark);
+        localStorage.setItem('dashThemeDark', (!isDark).toString());
+        if (!isDark) document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+      };
+
+      const progressStats = useMemo(() => {
+        let total = 0; let completed = 0;
+        sections.forEach(s => { total += s.items.length; completed += s.items.filter(i => i.checked).length; });
+        const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+        return { total, completed, percent };
+      }, [sections]);
+
+      const kanbanData = useMemo(() => {
+        const items = sections.flatMap(sec => 
+          sec.items.map(item => ({ ...item, secId: sec.id, secTitle: sec.title, status: item.status || (item.checked ? 'done' : 'todo') }))
+        ).filter(i => searchQuery ? i.text.toLowerCase().includes(searchQuery.toLowerCase()) : true)
+         .filter(i => hideCompleted ? !i.checked : true);
+
+        return {
+          todo: items.filter(i => i.status === 'todo'),
+          inProgress: items.filter(i => i.status === 'in-progress'),
+          done: items.filter(i => i.status === 'done')
+        };
+      }, [sections, searchQuery, hideCompleted]);
+
+      const triggerConfetti = useCallback(() => {
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 4000);
+      }, []);
+
+      useEffect(() => {
+        if (progressStats.percent === 100 && prevProgress.current < 100 && progressStats.total > 0) triggerConfetti();
+        prevProgress.current = progressStats.percent;
+
+        const completedSectionIds = sections.filter(s => s.items.length > 0 && s.items.every(i => i.checked)).map(s => s.id);
+        const newCompletions = completedSectionIds.filter(id => !prevCompletedSections.current.includes(id));
+        if (newCompletions.length > 0 && progressStats.percent < 100) triggerConfetti();
+        prevCompletedSections.current = completedSectionIds;
+      }, [sections, progressStats.percent, progressStats.total, triggerConfetti]);
+
+      const toggleItem = useCallback((secId, itemId) => updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: sec.items.map(i => i.id === itemId ? { ...i, checked: !i.checked, status: !i.checked ? 'done' : 'todo' } : i) } : sec)), [updateState]);
+      const changeStatus = useCallback((secId, itemId, newStatus) => updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: sec.items.map(i => i.id === itemId ? { ...i, status: newStatus, checked: newStatus === 'done' } : i) } : sec)), [updateState]);
+      const deleteItem = useCallback((secId, itemId) => updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: sec.items.filter(i => i.id !== itemId) } : sec)), [updateState]);
+      const addItem = useCallback((secId, text) => updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: [...sec.items, { id: Date.now().toString(), text, checked: false, status: 'todo', color: 'default', assignee: null }] } : sec)), [updateState]);
+      const editItem = useCallback((secId, itemId, newText) => updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: sec.items.map(i => i.id === itemId ? {...i, text: newText} : i) } : sec)), [updateState]);
+      
+      const cycleItemColor = useCallback((secId, itemId) => updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: sec.items.map(i => { if (i.id !== itemId) return i; const cycle = ['default', 'red', 'yellow', 'green']; return {...i, color: cycle[(cycle.indexOf(i.color || 'default') + 1) % cycle.length]}; }) } : sec)), [updateState]);
+      const cycleAssignee = useCallback((secId, itemId) => updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: sec.items.map(i => { if (i.id !== itemId) return i; const currentIdx = TEAM.findIndex(t => t.id === i.assignee); const nextId = currentIdx === -1 ? TEAM[0].id : (currentIdx + 1 >= TEAM.length ? null : TEAM[currentIdx + 1].id); return {...i, assignee: nextId}; }) } : sec)), [updateState]);
+      
+      const moveItem = useCallback((srcSecId, srcItemId, tgtSecId, tgtItemId) => {
+        updateState(prev => {
+          const newSecs = JSON.parse(JSON.stringify(prev)); 
+          const sSec = newSecs.find(s => s.id === srcSecId);
+          const tSec = newSecs.find(s => s.id === tgtSecId);
+          const srcIdx = sSec.items.findIndex(i => i.id === srcItemId);
+          if (srcIdx === -1) return prev;
+          const [item] = sSec.items.splice(srcIdx, 1);
+          
+          if (tgtItemId) {
+            const tgtIdx = tSec.items.findIndex(i => i.id === tgtItemId);
+            if (tgtIdx !== -1) tSec.items.splice(tgtIdx, 0, item);
+            else tSec.items.push(item);
+          } else { tSec.items.push(item); }
+          return newSecs;
+        });
+      }, [updateState]);
+
+      const exportToFile = () => {
+        const blob = new Blob([JSON.stringify(sections, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url; link.download = `magdecor_backup_${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      };
+
+      const importFromFile = (e) => {
+        const file = e.target.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            const data = JSON.parse(evt.target.result);
+            if (Array.isArray(data)) updateState(data); else alert("Неверный формат бэкапа.");
+          } catch { alert("Ошибка чтения."); }
+        };
+        reader.readAsText(file); e.target.value = null;
+      };
+
+      return (
+        <div className="min-h-screen p-4 sm:p-6 md:p-8 font-sans text-slate-800 dark:text-slate-200">
+          {showConfetti && <Confetti />}
+          <div className="max-w-7xl mx-auto flex flex-col h-full">
+            
+            <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4 flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-600 p-2 text-white rounded-lg shadow-sm text-2xl">⚡</div>
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight leading-none">MAGDECOR & METALLHAUT</h1>
+                  <p className="text-sm text-slate-500 mt-1">Оффлайн Дашборд</p>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+                <div className="relative flex-1 lg:flex-none min-w-[200px]">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50">🔍</span>
+                  <input type="text" placeholder="Поиск..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+
+                <div className="flex bg-slate-200 dark:bg-slate-800 p-1 rounded-lg border border-slate-300 dark:border-slate-700 shadow-inner">
+                  <button onClick={exportToFile} className="px-2 py-1.5 rounded-md hover:bg-white dark:hover:bg-slate-700 transition-all" title="Скачать бэкап">⬇️</button>
+                  <button onClick={() => fileInputRef.current?.click()} className="px-2 py-1.5 rounded-md hover:bg-white dark:hover:bg-slate-700 transition-all" title="Загрузить бэкап">⬆️</button>
+                  <input type="file" accept=".json" ref={fileInputRef} onChange={importFromFile} className="hidden" />
+                </div>
+
+                <div className="flex bg-slate-200 dark:bg-slate-800 p-1 rounded-lg border border-slate-300 dark:border-slate-700 shadow-inner">
+                  <button onClick={() => {setViewMode('grid'); localStorage.setItem('dashViewMode', 'grid')}} className={`px-3 py-1.5 rounded-md text-sm font-medium ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600' : 'text-slate-500'}`}>🗂️ Секции</button>
+                  <button onClick={() => {setViewMode('kanban'); localStorage.setItem('dashViewMode', 'kanban')}} className={`px-3 py-1.5 rounded-md text-sm font-medium ${viewMode === 'kanban' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600' : 'text-slate-500'}`}>📊 Канбан</button>
+                </div>
+
+                <button onClick={() => setHideCompleted(!hideCompleted)} className={`p-2 rounded-lg border shadow-sm ${hideCompleted ? 'bg-blue-50 border-blue-200' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`} title="Скрыть готовое">🔽</button>
+                <button onClick={toggleTheme} className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm">{isDark ? '☀️' : '🌙'}</button>
+              </div>
+            </header>
+
+            <div className="mb-6 flex-shrink-0 w-full bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+              <div className="flex justify-between items-end mb-2">
+                <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Прогресс: <strong className="text-slate-900 dark:text-slate-100">{progressStats.completed} из {progressStats.total}</strong></span>
+                <span className="text-lg font-bold text-blue-600">{progressStats.percent}%</span>
+              </div>
+              <div className="w-full bg-slate-100 dark:bg-slate-700/50 rounded-full h-3 overflow-hidden shadow-inner">
+                <div className="bg-gradient-to-r from-blue-500 to-indigo-500 h-3 rounded-full transition-all duration-700" style={{ width: `${progressStats.percent}%` }}></div>
+              </div>
+            </div>
+
+            {viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 flex-1 items-start">
+                {sections.map(section => <SectionCard key={section.id} section={section} hideCompleted={hideCompleted} searchQuery={searchQuery} onToggle={toggleItem} onDelete={deleteItem} onAdd={addItem} onEdit={editItem} onColorCycle={cycleItemColor} onAssignCycle={cycleAssignee} onMove={moveItem} />)}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1">
+                <KanbanColumn title="🎯 Нужно сделать" status="todo" items={kanbanData.todo} onStatusChange={changeStatus} onToggle={toggleItem} onAssignCycle={cycleAssignee} onColorCycle={cycleItemColor} />
+                <KanbanColumn title="⏳ В процессе" status="in-progress" items={kanbanData.inProgress} onStatusChange={changeStatus} onToggle={toggleItem} onAssignCycle={cycleAssignee} onColorCycle={cycleItemColor} />
+                <KanbanColumn title="✅ Готово" status="done" items={kanbanData.done} onStatusChange={changeStatus} onToggle={toggleItem} onAssignCycle={cycleAssignee} onColorCycle={cycleItemColor} />
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
