@@ -1,26 +1,35 @@
 <!DOCTYPE html>
-<html lang="ru" class="light">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MAGDECOR & METALLHAUT</title>
   
+  <!-- Защита от моргания темной темы при загрузке (FOUC) -->
+  <script>
+    try {
+      if (localStorage.getItem('dashThemeDark') === 'true') {
+        document.documentElement.classList.add('dark');
+      }
+    } catch (e) {}
+  </script>
+
   <!-- Загрузчик Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Конфигурация Tailwind (строго ПОСЛЕ загрузки скрипта) -->
   <script>
-    if (typeof tailwind !== 'undefined') {
-      tailwind.config = { 
-        darkMode: 'class',
-        theme: {
-          extend: {
-            fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
-            colors: {
-              slate: { 850: '#151f32' }
-            }
+    tailwind.config = { 
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            slate: { 850: '#151f32' }
           }
         }
-      };
-    }
+      }
+    };
   </script>
 
   <!-- React и Babel (Максимально стабильные ссылки CDNJS без crossorigin) -->
@@ -65,17 +74,17 @@
   <div id="fallback-error"></div>
 
   <script>
-    // Проверка, что скрипты не заблокировались браузером/антивирусом
+    // Проверка загрузки скриптов. Увеличен таймаут для медленного интернета.
     setTimeout(function() { 
       var errBox = document.getElementById('fallback-error');
-      if (typeof tailwind === 'undefined') {
+      if (typeof window.tailwind === 'undefined' || typeof window.tailwind.config === 'undefined') {
         errBox.innerHTML = '🚨 ВНИМАНИЕ! Браузер заблокировал стили (Tailwind). Отключите блокировщики (AdBlock) для этого сайта.';
         errBox.style.display = 'block';
       } else if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
         errBox.innerHTML = '🚨 ВНИМАНИЕ! Библиотека React не загрузилась! Отключите блокировщики скриптов или проверьте интернет.';
         errBox.style.display = 'block';
       }
-    }, 1500);
+    }, 4000);
   </script>
   
   <div id="root"></div>
@@ -83,9 +92,13 @@
   <script type="text/babel">
     const { useState, useEffect, useCallback, memo, useRef, useMemo } = React;
 
-    // === БЕЗОПАСНОЕ СОХРАНЕНИЕ ===
+    // === БЕЗОПАСНОЕ УПРАВЛЕНИЕ ЛОКАЛЬНОЙ ПАМЯТЬЮ ===
     const safeStorageSet = (key, value) => {
       try { localStorage.setItem(key, value); } catch (e) { console.warn('Storage disabled'); }
+    };
+    
+    const safeStorageGet = (key) => {
+      try { return localStorage.getItem(key); } catch (e) { return null; }
     };
 
     // === ВЕКТОРНЫЕ ИКОНКИ (SVG) ===
@@ -201,15 +214,20 @@
       const [isDragging, setIsDragging] = useState(false);
       const assigneeData = TEAM.find(t => t.id === item.assignee);
 
-      useEffect(() => setEditValue(item.text), [item.text]);
+      useEffect(() => {
+        setEditValue(item.text);
+      }, [item.text]);
 
       const saveEdit = () => {
-        if (editValue.trim() && editValue !== item.text) onEdit(sectionId, item.id, editValue.trim());
+        if (editValue.trim() && editValue !== item.text) {
+          onEdit(sectionId, item.id, editValue.trim());
+        }
         setIsEditing(false);
       };
 
       const handleDragStart = (e) => {
-        e.dataTransfer.setData('application/json', JSON.stringify({ srcSecId: sectionId, srcItemId: item.id }));
+        // Используем text/plain для совместимости с Firefox и Safari
+        e.dataTransfer.setData('text/plain', JSON.stringify({ srcSecId: sectionId, srcItemId: item.id }));
         setTimeout(() => setIsDragging(true), 0);
       };
       
@@ -238,8 +256,12 @@
           <div className="flex-1 overflow-hidden flex flex-col justify-start">
             {isEditing ? (
               <input 
-                autoFocus type="text" value={editValue} onChange={(e) => setEditValue(e.target.value)}
-                onBlur={saveEdit} onKeyDown={(e) => e.key === 'Enter' && saveEdit()} 
+                autoFocus 
+                type="text" 
+                value={editValue} 
+                onChange={(e) => setEditValue(e.target.value)}
+                onBlur={saveEdit} 
+                onKeyDown={(e) => e.key === 'Enter' && saveEdit()} 
                 className="w-full bg-white dark:bg-slate-900 rounded-md text-sm px-1 py-0 -mx-1 outline-none ring-2 ring-blue-500 text-slate-800 dark:text-slate-100 font-medium shadow-sm"
               />
             ) : (
@@ -279,16 +301,29 @@
           .sort((a, b) => (a.checked === b.checked ? 0 : a.checked ? 1 : -1));
       }, [section.items, hideCompleted, searchQuery]);
 
-      const handleAdd = () => { if (!inputValue.trim()) return; onAdd(section.id, inputValue.trim()); setInputValue(''); };
+      const handleAdd = () => { 
+        if (!inputValue.trim()) return; 
+        onAdd(section.id, inputValue.trim()); 
+        setInputValue(''); 
+      };
 
       const handleDropOnSection = useCallback((e) => {
-        e.preventDefault(); setIsDragOver(false);
-        try { const data = JSON.parse(e.dataTransfer.getData('application/json')); onMove(data.srcSecId, data.srcItemId, section.id, null); } catch(err) {}
+        e.preventDefault(); 
+        setIsDragOver(false);
+        try { 
+          const data = JSON.parse(e.dataTransfer.getData('text/plain')); 
+          onMove(data.srcSecId, data.srcItemId, section.id, null); 
+        } catch(err) {}
       }, [onMove, section.id]);
 
       const handleDropOnItem = useCallback((e, targetItemId) => {
-        e.preventDefault(); e.stopPropagation(); setIsDragOver(false);
-        try { const data = JSON.parse(e.dataTransfer.getData('application/json')); onMove(data.srcSecId, data.srcItemId, section.id, targetItemId); } catch(err) {}
+        e.preventDefault(); 
+        e.stopPropagation(); 
+        setIsDragOver(false);
+        try { 
+          const data = JSON.parse(e.dataTransfer.getData('text/plain')); 
+          onMove(data.srcSecId, data.srcItemId, section.id, targetItemId); 
+        } catch(err) {}
       }, [onMove, section.id]);
 
       return (
@@ -318,7 +353,17 @@
             ) : (
               <ul className="space-y-2">
                 {visibleItems.map(item => (
-                  <GridTaskItem key={item.id} item={item} sectionId={section.id} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onColorCycle={onColorCycle} onAssignCycle={onAssignCycle} onDropItem={handleDropOnItem} />
+                  <GridTaskItem 
+                    key={item.id} 
+                    item={item} 
+                    sectionId={section.id} 
+                    onToggle={onToggle} 
+                    onDelete={onDelete} 
+                    onEdit={onEdit} 
+                    onColorCycle={onColorCycle} 
+                    onAssignCycle={onAssignCycle} 
+                    onDropItem={handleDropOnItem} 
+                  />
                 ))}
               </ul>
             )}
@@ -328,7 +373,11 @@
           <div className="p-3 border-t border-slate-100 dark:border-slate-700/50 bg-slate-50/30 dark:bg-transparent">
             <div className="flex items-center gap-2">
               <input 
-                type="text" placeholder="Новая задача..." value={inputValue} onChange={(e) => setInputValue(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAdd()} 
+                type="text" 
+                placeholder="Новая задача..." 
+                value={inputValue} 
+                onChange={(e) => setInputValue(e.target.value)} 
+                onKeyDown={(e) => e.key === 'Enter' && handleAdd()} 
                 className="flex-1 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:text-white transition-all shadow-sm placeholder:text-slate-400" 
               />
               <button onClick={handleAdd} className="p-2.5 bg-blue-600 text-white hover:bg-blue-700 rounded-xl transition-colors shadow-sm focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900">
@@ -346,7 +395,7 @@
       const assigneeData = TEAM.find(t => t.id === item.assignee);
 
       const handleDragStart = (e) => {
-        e.dataTransfer.setData('application/json', JSON.stringify({ srcSecId: item.secId, srcItemId: item.id }));
+        e.dataTransfer.setData('text/plain', JSON.stringify({ srcSecId: item.secId, srcItemId: item.id }));
         setTimeout(() => setIsDragging(true), 0);
       };
       
@@ -380,12 +429,23 @@
     // === КАНБАН КОЛОНКА ===
     const KanbanColumn = memo(({ status, title, items, onStatusChange, onToggle, onAssignCycle, onColorCycle }) => {
       const [isDragOver, setIsDragOver] = useState(false);
+      
       const handleDrop = useCallback((e) => {
-        e.preventDefault(); setIsDragOver(false);
-        try { const data = JSON.parse(e.dataTransfer.getData('application/json')); onStatusChange(data.srcSecId, data.srcItemId, status); } catch(err) {}
+        e.preventDefault(); 
+        setIsDragOver(false);
+        try { 
+          const data = JSON.parse(e.dataTransfer.getData('text/plain')); 
+          onStatusChange(data.srcSecId, data.srcItemId, status); 
+        } catch(err) {}
       }, [onStatusChange, status]);
+      
       return (
-        <div className={`flex flex-col bg-slate-200/50 dark:bg-slate-850 rounded-2xl p-4 border-2 transition-all duration-300 min-h-[60vh] ${isDragOver ? 'border-blue-500 bg-blue-50/80 dark:bg-blue-900/30 shadow-xl scale-[1.01]' : 'border-transparent'}`} onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }} onDragLeave={() => setIsDragOver(false)} onDrop={handleDrop}>
+        <div 
+          className={`flex flex-col bg-slate-200/50 dark:bg-slate-850 rounded-2xl p-4 border-2 transition-all duration-300 min-h-[60vh] ${isDragOver ? 'border-blue-500 bg-blue-50/80 dark:bg-blue-900/30 shadow-xl scale-[1.01]' : 'border-transparent'}`} 
+          onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }} 
+          onDragLeave={() => setIsDragOver(false)} 
+          onDrop={handleDrop}
+        >
           <div className="flex justify-between items-center mb-5 px-1">
             <h3 className="font-bold text-slate-800 dark:text-slate-200 tracking-tight">{title}</h3>
             <span className="text-xs font-bold bg-white dark:bg-slate-700 px-2 py-1 rounded-lg text-slate-600 dark:text-slate-300 shadow-sm">{items.length}</span>
@@ -400,7 +460,7 @@
     // === ГЛАВНОЕ ПРИЛОЖЕНИЕ ===
     const App = () => {
       const [sections, setSections] = useState(initialData);
-      const [isDark, setIsDark] = useState(false);
+      const [isDark, setIsDark] = useState(() => safeStorageGet('dashThemeDark') === 'true');
       const [hideCompleted, setHideCompleted] = useState(false);
       const [searchQuery, setSearchQuery] = useState('');
       const [viewMode, setViewMode] = useState('grid');
@@ -411,12 +471,15 @@
       const fileInputRef = useRef(null);
 
       useEffect(() => {
-        try {
-          if (localStorage.getItem('dashThemeDark') === 'true') { setIsDark(true); document.documentElement.classList.add('dark'); }
-          if (localStorage.getItem('dashViewMode')) setViewMode(localStorage.getItem('dashViewMode'));
-          const savedData = localStorage.getItem('myDashboardData');
-          if (savedData) setSections(JSON.parse(savedData));
-        } catch (e) {}
+        const savedView = safeStorageGet('dashViewMode');
+        if (savedView) setViewMode(savedView);
+        
+        const savedData = safeStorageGet('myDashboardData');
+        if (savedData) {
+          try {
+            setSections(JSON.parse(savedData));
+          } catch(e) {}
+        }
       }, []);
 
       const updateState = useCallback((updater) => {
@@ -428,40 +491,85 @@
       }, []);
 
       const toggleTheme = () => {
-        setIsDark(!isDark); safeStorageSet('dashThemeDark', (!isDark).toString());
-        if (!isDark) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark');
+        const newIsDark = !isDark;
+        setIsDark(newIsDark); 
+        safeStorageSet('dashThemeDark', newIsDark.toString());
+        if (newIsDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
       };
 
       const progressStats = useMemo(() => {
         let total = 0; let completed = 0;
-        sections.forEach(s => { total += s.items.length; completed += s.items.filter(i => i.checked).length; });
+        sections.forEach(s => { 
+          total += s.items.length; 
+          completed += s.items.filter(i => i.checked).length; 
+        });
         const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
         return { total, completed, percent };
       }, [sections]);
 
       const kanbanData = useMemo(() => {
-        const items = sections.flatMap(sec => sec.items.map(item => ({ ...item, secId: sec.id, secTitle: sec.title, status: item.status || (item.checked ? 'done' : 'todo') }))).filter(i => searchQuery ? i.text.toLowerCase().includes(searchQuery.toLowerCase()) : true).filter(i => hideCompleted ? !i.checked : true);
-        return { todo: items.filter(i => i.status === 'todo'), inProgress: items.filter(i => i.status === 'in-progress'), done: items.filter(i => i.status === 'done') };
+        const items = sections.flatMap(sec => 
+          sec.items.map(item => ({ ...item, secId: sec.id, secTitle: sec.title, status: item.status || (item.checked ? 'done' : 'todo') }))
+        ).filter(i => searchQuery ? i.text.toLowerCase().includes(searchQuery.toLowerCase()) : true)
+         .filter(i => hideCompleted ? !i.checked : true);
+         
+        return { 
+          todo: items.filter(i => i.status === 'todo'), 
+          inProgress: items.filter(i => i.status === 'in-progress'), 
+          done: items.filter(i => i.status === 'done') 
+        };
       }, [sections, searchQuery, hideCompleted]);
 
-      const triggerConfetti = useCallback(() => { setShowConfetti(true); setTimeout(() => setShowConfetti(false), 4000); }, []);
+      const triggerConfetti = useCallback(() => { 
+        setShowConfetti(true); 
+        setTimeout(() => setShowConfetti(false), 4000); 
+      }, []);
 
       useEffect(() => {
-        if (progressStats.percent === 100 && prevProgress.current < 100 && progressStats.total > 0) triggerConfetti();
+        if (progressStats.percent === 100 && prevProgress.current < 100 && progressStats.total > 0) {
+          triggerConfetti();
+        }
         prevProgress.current = progressStats.percent;
+        
         const completedSectionIds = sections.filter(s => s.items.length > 0 && s.items.every(i => i.checked)).map(s => s.id);
         const newCompletions = completedSectionIds.filter(id => !prevCompletedSections.current.includes(id));
-        if (newCompletions.length > 0 && progressStats.percent < 100) triggerConfetti();
+        if (newCompletions.length > 0 && progressStats.percent < 100) {
+          triggerConfetti();
+        }
         prevCompletedSections.current = completedSectionIds;
       }, [sections, progressStats.percent, progressStats.total, triggerConfetti]);
 
-      const toggleItem = useCallback((secId, itemId) => updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: sec.items.map(i => i.id === itemId ? { ...i, checked: !i.checked, status: !i.checked ? 'done' : 'todo' } : i) } : sec)), [updateState]);
-      const changeStatus = useCallback((secId, itemId, newStatus) => updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: sec.items.map(i => i.id === itemId ? { ...i, status: newStatus, checked: newStatus === 'done' } : i) } : sec)), [updateState]);
-      const deleteItem = useCallback((secId, itemId) => updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: sec.items.filter(i => i.id !== itemId) } : sec)), [updateState]);
-      const addItem = useCallback((secId, text) => updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: [...sec.items, { id: Date.now().toString(), text, checked: false, status: 'todo', color: 'default', assignee: null }] } : sec)), [updateState]);
-      const editItem = useCallback((secId, itemId, newText) => updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: sec.items.map(i => i.id === itemId ? {...i, text: newText} : i) } : sec)), [updateState]);
-      const cycleItemColor = useCallback((secId, itemId) => updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: sec.items.map(i => { if (i.id !== itemId) return i; const cycle = ['default', 'red', 'yellow', 'green']; return {...i, color: cycle[(cycle.indexOf(i.color || 'default') + 1) % cycle.length]}; }) } : sec)), [updateState]);
-      const cycleAssignee = useCallback((secId, itemId) => updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: sec.items.map(i => { if (i.id !== itemId) return i; const currentIdx = TEAM.findIndex(t => t.id === i.assignee); const nextId = currentIdx === -1 ? TEAM[0].id : (currentIdx + 1 >= TEAM.length ? null : TEAM[currentIdx + 1].id); return {...i, assignee: nextId}; }) } : sec)), [updateState]);
+      const toggleItem = useCallback((secId, itemId) => {
+        updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: sec.items.map(i => i.id === itemId ? { ...i, checked: !i.checked, status: !i.checked ? 'done' : 'todo' } : i) } : sec));
+      }, [updateState]);
+      
+      const changeStatus = useCallback((secId, itemId, newStatus) => {
+        updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: sec.items.map(i => i.id === itemId ? { ...i, status: newStatus, checked: newStatus === 'done' } : i) } : sec));
+      }, [updateState]);
+      
+      const deleteItem = useCallback((secId, itemId) => {
+        updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: sec.items.filter(i => i.id !== itemId) } : sec));
+      }, [updateState]);
+      
+      const addItem = useCallback((secId, text) => {
+        updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: [...sec.items, { id: Date.now().toString(), text, checked: false, status: 'todo', color: 'default', assignee: null }] } : sec));
+      }, [updateState]);
+      
+      const editItem = useCallback((secId, itemId, newText) => {
+        updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: sec.items.map(i => i.id === itemId ? {...i, text: newText} : i) } : sec));
+      }, [updateState]);
+      
+      const cycleItemColor = useCallback((secId, itemId) => {
+        updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: sec.items.map(i => { if (i.id !== itemId) return i; const cycle = ['default', 'red', 'yellow', 'green']; return {...i, color: cycle[(cycle.indexOf(i.color || 'default') + 1) % cycle.length]}; }) } : sec));
+      }, [updateState]);
+      
+      const cycleAssignee = useCallback((secId, itemId) => {
+        updateState(prev => prev.map(sec => sec.id === secId ? { ...sec, items: sec.items.map(i => { if (i.id !== itemId) return i; const currentIdx = TEAM.findIndex(t => t.id === i.assignee); const nextId = currentIdx === -1 ? TEAM[0].id : (currentIdx + 1 >= TEAM.length ? null : TEAM[currentIdx + 1].id); return {...i, assignee: nextId}; }) } : sec));
+      }, [updateState]);
       
       const moveItem = useCallback((srcSecId, srcItemId, tgtSecId, tgtItemId) => {
         updateState(prev => {
@@ -470,11 +578,18 @@
           const tSec = newSecs.find(s => s.id === tgtSecId);
           const srcIdx = sSec.items.findIndex(i => i.id === srcItemId);
           if (srcIdx === -1) return prev;
+          
           const [item] = sSec.items.splice(srcIdx, 1);
           if (tgtItemId) {
             const tgtIdx = tSec.items.findIndex(i => i.id === tgtItemId);
-            if (tgtIdx !== -1) tSec.items.splice(tgtIdx, 0, item); else tSec.items.push(item);
-          } else { tSec.items.push(item); }
+            if (tgtIdx !== -1) {
+              tSec.items.splice(tgtIdx, 0, item); 
+            } else {
+              tSec.items.push(item);
+            }
+          } else { 
+            tSec.items.push(item); 
+          }
           return newSecs;
         });
       }, [updateState]);
@@ -482,23 +597,32 @@
       const exportToFile = () => {
         const blob = new Blob([JSON.stringify(sections, null, 2)], { type: "application/json" });
         const url = URL.createObjectURL(blob);
-        const link = document.createElement('a'); link.href = url; link.download = `magdecor_backup_${new Date().toISOString().slice(0,10)}.json`;
-        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        const link = document.createElement('a'); 
+        link.href = url; 
+        link.download = `magdecor_backup_${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(link); 
+        link.click(); 
+        document.body.removeChild(link);
       };
 
       const importFromFile = (e) => {
-        const file = e.target.files[0]; if (!file) return;
+        const file = e.target.files[0]; 
+        if (!file) return;
         const reader = new FileReader();
         reader.onload = (evt) => { 
           try { 
             const data = JSON.parse(evt.target.result); 
-            if (Array.isArray(data)) updateState(data); 
-            else alert("Неверный формат бэкапа."); 
+            if (Array.isArray(data)) {
+              updateState(data); 
+            } else {
+              alert("Неверный формат бэкапа."); 
+            }
           } catch (err) { 
             alert("Ошибка чтения файла."); 
           } 
         };
-        reader.readAsText(file); e.target.value = null;
+        reader.readAsText(file); 
+        e.target.value = null;
       };
 
       return (
